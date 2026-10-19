@@ -44,13 +44,12 @@ export default function Sculpture({ paused }: { paused: boolean }) {
       return;
     }
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
-    renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.setClearColor(0x000000, 0);
     mount.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
@@ -75,7 +74,7 @@ export default function Sculpture({ paused }: { paused: boolean }) {
     const key = new THREE.DirectionalLight(0xeee5ff, 2.4);
     key.position.set(-1.6, 2, 3);
     key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.mapSize.set(2048, 2048);
     Object.assign(key.shadow.camera, {
       left: -0.7,
       right: 0.7,
@@ -102,7 +101,6 @@ export default function Sculpture({ paused }: { paused: boolean }) {
     let frame = 0;
     let lastTime = 0;
     let elapsed = 0;
-    let shadowTick = 0;
     let mouseX = 0;
     let mouseY = 0;
     let currentX = 0;
@@ -143,7 +141,6 @@ export default function Sculpture({ paused }: { paused: boolean }) {
         });
         scene.add(model);
         resize();
-        renderer.shadowMap.needsUpdate = true;
         renderer.render(scene, camera);
         setReady(true);
         start();
@@ -186,8 +183,6 @@ export default function Sculpture({ paused }: { paused: boolean }) {
           initialRotation + currentX * 0.07 + Math.sin(elapsed * 0.2) * 0.025;
         model.rotation.x = currentY * 0.025;
         model.position.y = Math.sin(elapsed * 0.35) * 0.002;
-        // Motion is tiny, so refresh the shadow map only every few frames.
-        if (++shadowTick % 6 === 0) renderer.shadowMap.needsUpdate = true;
         renderer.render(scene, camera);
       }
       frame = requestAnimationFrame(render);
