@@ -241,7 +241,6 @@ body:has(dialog[open]) {
   inset: 0;
   background-image: url("/textures/grain.svg");
   opacity: 0.055;
-  mix-blend-mode: screen;
   pointer-events: none;
 }
 .halo {
@@ -259,6 +258,7 @@ body:has(dialog[open]) {
     inset 0 0 30px #a674e92a;
   z-index: -1;
   opacity: 0.7;
+  will-change: transform;
 }
 .halo:after {
   content: "";
@@ -279,8 +279,8 @@ body:has(dialog[open]) {
   border-radius: 50%;
   border: 1px solid transparent;
   border-top-color: #f0cfff;
-  filter: blur(1px);
   animation: halo-breathe 8s ease-in-out infinite;
+  will-change: opacity;
 }
 .hero-title {
   position: absolute;
@@ -313,7 +313,8 @@ body:has(dialog[open]) {
   white-space: nowrap;
   z-index: 0;
   transform-origin: center;
-  filter: drop-shadow(0 4px 20px #8a47c212);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 .sculpture-stage {
   position: absolute;
@@ -324,6 +325,7 @@ body:has(dialog[open]) {
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
+  contain: layout paint;
 }
 .sculpture-shell,
 .sculpture-canvas {
@@ -352,7 +354,6 @@ body:has(dialog[open]) {
   transition: opacity 1.3s;
   position: absolute;
   inset: 0;
-  filter: drop-shadow(-10px 0 25px #bd78ff24);
 }
 .sculpture-poster.hidden {
   opacity: 0;
