@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUp, ArrowUpRight, Check, ChevronDown, Circle, Code2, GitBranch, MessageSquare, MoreHorizontal, Plus, Terminal } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Check, ChevronDown, ChevronRight, Circle, Code2, FileCode2, GitBranch, MessageSquare, MoreHorizontal, Plus, Terminal } from "lucide-react";
 
 export type Product = "chat" | "cloud" | "desktop" | "cli";
 const conversations = [
@@ -246,6 +246,173 @@ function CloudPreview() {
     </div>
   );
 }
+function DesktopPreview() {
+  const [file, setFile] = useState(0);
+  const [diff, setDiff] = useState(true);
+  const files = ["CommandMenu.tsx", "useShortcut.ts", "App.tsx"];
+  const lines =
+    file === 0
+      ? [
+          "import { useState } from 'react'",
+          "import { useShortcut } from './useShortcut'",
+          "",
+          "export function CommandMenu() {",
+          "  const [open, setOpen] = useState(false)",
+          "",
+          "  useShortcut('mod+k', () => {",
+          "    setOpen(current => !current)",
+          "  })",
+          "",
+          "  return (",
+          "    <Dialog open={open}>",
+          "      <CommandInput autoFocus />",
+          "      <CommandList />",
+          "    </Dialog>",
+          "  )",
+          "}",
+        ]
+      : file === 1
+        ? [
+            "import { useEffect } from 'react'",
+            "",
+            "export function useShortcut(key, action) {",
+            "  useEffect(() => {",
+            "    const handleKey = (event) => {",
+            "      if (matches(event, key)) {",
+            "        event.preventDefault()",
+            "        action()",
+            "      }",
+            "    }",
+            "",
+            "    window.addEventListener('keydown', handleKey)",
+            "    return () => {",
+            "      window.removeEventListener('keydown', handleKey)",
+            "    }",
+            "  }, [key, action])",
+            "}",
+          ]
+        : [
+            "import { CommandMenu } from './CommandMenu'",
+            "import { Workspace } from './Workspace'",
+            "",
+            "export default function App() {",
+            "  return (",
+            "    <main>",
+            "      <Workspace />",
+            "      <CommandMenu />",
+            "    </main>",
+            "  )",
+            "}",
+          ];
+  return (
+    <div className="app-window desktop-window">
+      <WindowBar name="studio — Fathom" />
+      <div className="ide-layout">
+        <aside className="ide-sidebar">
+          <span className="ui-label">
+            EXPLORER <MoreHorizontal size={13} />
+          </span>
+          <div>
+            <ChevronDown size={11} /> STUDIO
+          </div>
+          <div className="folder-label">
+            <ChevronDown size={11} /> src
+          </div>
+          {files.map((f, i) => (
+            <button
+              className={file === i ? "active" : ""}
+              key={f}
+              onClick={() => setFile(i)}
+            >
+              <FileCode2 size={11} />
+              {f}
+            </button>
+          ))}
+          <div className="folder-label">
+            <ChevronRight size={11} /> public
+          </div>
+          <div className="folder-label">
+            <FileCode2 size={11} /> package.json
+          </div>
+        </aside>
+        <div className="ide-editor">
+          <div className="editor-tab">
+            <FileCode2 size={12} />
+            {files[file]}
+            <span>×</span>
+            <button onClick={() => setDiff(!diff)} aria-pressed={diff}>
+              {diff ? "Hide diff" : "Show diff"}
+            </button>
+          </div>
+          <div className="code-lines">
+            {lines.map((line, i) => (
+              <div
+                className={diff && i > 5 && i < 9 ? "added-line" : ""}
+                key={`${file}-${i}`}
+              >
+                <span>{i + 1}</span>
+                <code>{line}</code>
+              </div>
+            ))}
+          </div>
+          <div className="ide-terminal">
+            <div>
+              TERMINAL{" "}
+              <span>
+                PROBLEMS <b>0</b>
+              </span>
+            </div>
+            <p>
+              <span>~/studio</span> $ npm run dev
+            </p>
+            <p className="terminal-success">✓ Ready on localhost:5173</p>
+          </div>
+        </div>
+        <aside className="ide-agent">
+          <span className="ui-label">
+            FATHOM AGENT <Plus size={12} />
+          </span>
+          <div className="agent-message">
+            Add keyboard navigation to the command palette.
+          </div>
+          <div className="agent-response">
+            <span className="assistant-mark">f</span>
+            <p>
+              The shortcut handler is connected. Focus returns to the editor
+              when you close the menu.
+            </p>
+          </div>
+          <span className="ui-label agent-changes">PROPOSED CHANGES</span>
+          {files.slice(0, 2).map((f) => (
+            <div className="agent-file" key={f}>
+              <FileCode2 size={11} />
+              {f}
+              <span>+</span>
+            </div>
+          ))}
+          <button
+            className="review-button"
+            onClick={() => {
+              setFile(0);
+              setDiff(!diff);
+            }}
+          >
+            Inspect changes <ArrowUpRight size={12} />
+          </button>
+          <small>Interface concept</small>
+        </aside>
+      </div>
+      <div className="ide-status">
+        <span>
+          <GitBranch size={10} /> fathom/command-palette
+        </span>
+        <span>
+          TypeScript · UTF-8 <Check size={11} />
+        </span>
+      </div>
+    </div>
+  );
+}
 export default function ProductPreview({ product }: { product: Product; paused: boolean }) {
-  return <div className="preview-transition" key={product}>{product === "cloud" ? <CloudPreview /> : <ChatPreview />}</div>;
+  return <div className="preview-transition" key={product}>{product === "desktop" ? <DesktopPreview /> : product === "cloud" ? <CloudPreview /> : <ChatPreview />}</div>;
 }
