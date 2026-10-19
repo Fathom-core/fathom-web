@@ -1,166 +1,854 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, ChevronRight, Code2, Command, Github, Globe2, Menu, MessageSquare, Monitor, MousePointer2, Pause, Play, Plus, Sparkles, Terminal, X } from 'lucide-react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import Lenis from 'lenis'
-import Demo from './Demo'
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  ChevronDown,
+  Cloud,
+  Code2,
+  Github,
+  Menu,
+  MessageSquare,
+  Monitor,
+  Pause,
+  Play,
+  Plus,
+  Terminal,
+  X,
+} from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import ProductPreview from "./ProductPreview";
+import type { Product } from "./ProductPreview";
 
-const Core = lazy(() => import('./Core'))
-gsap.registerPlugin(ScrollTrigger)
+const Sculpture = lazy(() => import("./Sculpture"));
+gsap.registerPlugin(ScrollTrigger);
 
-function Mark({ className = '' }: { className?: string }) {
-  return <svg className={`brand-mark ${className}`} viewBox="0 0 40 40" fill="none" aria-hidden="true"><ellipse cx="20" cy="20" rx="17" ry="7.5" transform="rotate(-45 20 20)" /><ellipse cx="20" cy="20" rx="17" ry="7.5" transform="rotate(45 20 20)" /><circle cx="20" cy="20" r="4.5" /></svg>
+export function Mark() {
+  return (
+    <svg className="mark" viewBox="0 0 32 36" fill="none" aria-hidden="true">
+      <path d="M5 31V5h23M5 18h18" stroke="currentColor" strokeWidth="2.5" />
+      <path
+        d="M12 31V12h16M12 25h11"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        opacity=".45"
+      />
+    </svg>
+  );
 }
 
-const modes = [
-  { name: 'Think', detail: 'Follow a thought. Find a new perspective.', label: 'CURIOSITY, WITHOUT A CEILING', icon: MessageSquare },
-  { name: 'Create', detail: 'Make the thing you can’t stop imagining.', label: 'IMAGINATION, MADE TANGIBLE', icon: Code2 },
-  { name: 'Act', detail: 'Give an idea the tools to go somewhere.', label: 'INTENTION, MEET INITIATIVE', icon: MousePointer2 },
-]
+const products: {
+  id: Product;
+  name: string;
+  tag: string;
+  title: string;
+  copy: string;
+  features: string[];
+  icon: typeof Cloud;
+}[] = [
+  {
+    id: "chat",
+    name: "Chat",
+    tag: "A SPACE FOR YOUR MIND",
+    title: "Follow the thought.\nSee where it goes.",
+    copy: "An uncensored thinking partner for the questions, ideas, and possibilities that deserve more room. Research, write, reason, and build on your own terms.",
+    features: ["Deep conversations", "Research & analysis", "Writing & code"],
+    icon: MessageSquare,
+  },
+  {
+    id: "cloud",
+    name: "Cloud",
+    tag: "DELEGATE THE DOING",
+    title: "Set the direction.\nLet it get to work.",
+    copy: "Connect a repository and give an agent a task. Fathom Cloud is being built to write code, run tests, and prepare changes while you get on with your day.",
+    features: [
+      "Isolated workspaces",
+      "Observable execution",
+      "Changes for review",
+    ],
+    icon: Cloud,
+  },
+  {
+    id: "desktop",
+    name: "Desktop",
+    tag: "YOUR NEXT DEVELOPMENT ENVIRONMENT",
+    title: "A workspace that\nthinks alongside you.",
+    copy: "Your editor, terminal, browser, and AI in the same place. An AI-native IDE designed for ambitious software and authorized computer automation.",
+    features: [
+      "Project-aware agents",
+      "Editor & terminal",
+      "Computer automation",
+    ],
+    icon: Monitor,
+  },
+  {
+    id: "cli",
+    name: "CLI",
+    tag: "INTELLIGENCE AT YOUR PROMPT",
+    title: "Less ceremony.\nMore command.",
+    copy: "Bring Fathom into the terminal you already call home. Work through a codebase, automate a workflow, or hand an agent the next task.",
+    features: [
+      "Natural-language tasks",
+      "Local project context",
+      "Scriptable workflows",
+    ],
+    icon: Terminal,
+  },
+];
+
+const questions = [
+  [
+    "What is Fathom?",
+    "Fathom is an agentic AI ecosystem built around configurable, self-hosted, open-weight intelligence. It connects a conversational workspace, autonomous cloud development, a desktop IDE, and a terminal agent.",
+  ],
+  [
+    "What does uncensored mean here?",
+    "It describes our direction for the model: open-ended conversation, creative freedom, and control over your own AI. Tool execution is a separate concern. Agents work with scoped access, isolated environments, and your authorization for sensitive actions.",
+  ],
+  [
+    "Is Fathom available yet?",
+    "Fathom is at the foundation stage. This page introduces the vision and interface concepts. Live AI inference, user accounts, cloud execution, and downloadable applications are still in development.",
+  ],
+  [
+    "How do the products connect?",
+    "Chat, Cloud, Desktop, and CLI are being designed around a common identity, model registry, and agent protocol. The goal is to carry context between environments while keeping local and cloud execution separate.",
+  ],
+];
 
 export default function App() {
-  const page = useRef<HTMLDivElement>(null)
-  const [mode, setMode] = useState(0)
-  const [menu, setMenu] = useState(false)
-  const [paused, setPaused] = useState(false)
-  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const [openFaq, setOpenFaq] = useState<number | null>(0)
-  const [selectedNode, setSelectedNode] = useState('Web')
-  const [copied, setCopied] = useState(false)
-  const lenis = useRef<Lenis | null>(null)
-  const motionOff = reducedMotion || paused
+  const root = useRef<HTMLDivElement>(null);
+  const [product, setProduct] = useState<Product>("chat");
+  const [node, setNode] = useState<Product>("chat");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dialog, setDialog] = useState<"login" | "signup" | null>(null);
+  const [faq, setFaq] = useState<number | null>(0);
+  const [paused, setPaused] = useState(false);
+  const [reduced, setReduced] = useState(
+    () => matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const smooth = useRef<Lenis | null>(null);
+  const motionOff = paused || reduced;
+  const active = products.find((p) => p.id === product)!;
+  const activeNode = products.find((p) => p.id === node)!;
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const change = () => setReducedMotion(media.matches)
-    media.addEventListener('change', change)
-    return () => media.removeEventListener('change', change)
-  }, [])
+    const query = matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('motion-paused', motionOff)
-    if (motionOff) return
-    const smooth = new Lenis({ duration: 1.05, smoothWheel: true, anchors: true })
-    lenis.current = smooth
-    smooth.on('scroll', ScrollTrigger.update)
-    const update = (time: number) => smooth.raf(time * 1000)
-    gsap.ticker.add(update)
-    return () => { gsap.ticker.remove(update); smooth.destroy(); lenis.current = null }
-  }, [motionOff])
-
-  useEffect(() => {
-    const escape = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(false) }
-    window.addEventListener('keydown', escape)
-    return () => window.removeEventListener('keydown', escape)
-  }, [])
-
-  useEffect(() => {
-    if (motionOff) return
+    document.documentElement.classList.toggle("motion-paused", motionOff);
+    if (motionOff) return;
+    const lenis = new Lenis({
+      duration: 1.05,
+      smoothWheel: true,
+      anchors: { offset: -90 },
+    });
+    smooth.current = lenis;
+    lenis.on("scroll", ScrollTrigger.update);
+    const tick = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
     const context = gsap.context(() => {
-      gsap.from('.hero-line > span', { yPercent: 112, rotate: 2, duration: 1.25, stagger: 0.13, ease: 'power4.out', delay: 0.15 })
-      gsap.from('.hero-enter', { y: 20, opacity: 0, duration: 1, stagger: 0.12, ease: 'power3.out', delay: 0.6 })
-      gsap.from('.core-stage', { opacity: 0, scale: 0.88, duration: 1.8, ease: 'power3.out', delay: 0.15 })
-      gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach(el => {
-        gsap.from(el, { y: 45, opacity: 0, duration: 0.95, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 89%', once: true } })
-      })
-      gsap.fromTo('.statement-word', { opacity: 0.2 }, { opacity: 1, stagger: 0.15, ease: 'none', scrollTrigger: { trigger: '.statement', start: 'top 82%', end: 'bottom 54%', scrub: 0.5 } })
-      gsap.to('.hero-orb-wrap', { y: 100, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1 } })
-    }, page)
-    return () => context.revert()
-  }, [motionOff])
+      gsap.from(".hero-title", {
+        opacity: 0,
+        duration: 1.5,
+        ease: "power3.out",
+        delay: 0.15,
+      });
+      gsap.from(".hero-copy, .hero-aside, .hero-bottom", {
+        y: 18,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.12,
+        delay: 0.5,
+        ease: "power3.out",
+      });
+      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
+        gsap.from(element, {
+          y: 35,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: { trigger: element, start: "top 92%", once: true },
+        });
+      });
+      gsap.to(".hero-title", {
+        y: 85,
+        ease: "none",
+        scrollTrigger: {
+          trigger: ".hero",
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+      gsap.fromTo(
+        ".vision-word",
+        { color: "#54505e" },
+        {
+          color: "#eee9f7",
+          stagger: 0.08,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".vision-statement",
+            start: "top 85%",
+            end: "bottom 50%",
+            scrub: 0.6,
+          },
+        },
+      );
+      gsap.to(".ecosystem-path", {
+        strokeDashoffset: 0,
+        duration: 2,
+        ease: "power2.inOut",
+        scrollTrigger: {
+          trigger: ".ecosystem-map",
+          start: "top 70%",
+          once: true,
+        },
+      });
+    }, root);
+    return () => {
+      context.revert();
+      gsap.ticker.remove(tick);
+      lenis.destroy();
+      smooth.current = null;
+    };
+  }, [motionOff]);
 
-  const goTo = (id: string, focus = false) => {
-    setMenu(false)
-    const target = document.getElementById(id)
-    if (!target) return
-    if (lenis.current) lenis.current.scrollTo(target, { offset: -100, onComplete: () => { if (focus) document.getElementById('demo-prompt')?.focus({ preventScroll: true }) } })
-    else { target.scrollIntoView({ behavior: motionOff ? 'instant' : 'smooth' }); if (focus) document.getElementById('demo-prompt')?.focus({ preventScroll: true }) }
-  }
-  const share = async () => {
-    try { await navigator.clipboard.writeText(window.location.href); setCopied(true); window.setTimeout(() => setCopied(false), 2200) }
-    catch { setCopied(false) }
-  }
+  useEffect(() => {
+    if (dialog) {
+      dialogRef.current?.showModal();
+      smooth.current?.stop();
+    } else {
+      dialogRef.current?.close();
+      smooth.current?.start();
+    }
+    return () => smooth.current?.start();
+  }, [dialog]);
 
-  const faq = [
-    ['What is Fathom?', 'Fathom is an AI ecosystem in development, built to connect conversation, autonomous agents, and the tools to get things done. The web platform is the first gateway, with a shared foundation for cloud workspaces, desktop, CLI, and extensions.'],
-    ['Is Apollo the only model?', 'Apollo is the flagship in a growing family of Fathom models. The platform is being designed for different models and capabilities, all connected to the same projects, tools, and context. The rest of the lineup is still taking shape.'],
-    ['What powers the ecosystem?', 'Fathom’s direction is self-hosted, open-weight AI infrastructure. That shared foundation will power reasoning, coding, research, browser interaction, and authorized execution across the ecosystem.'],
-    ['Can I use Fathom today?', 'You’re exploring the first page of Fathom. The workspace on this page is an interactive concept preview; the live AI service, account system, and cloud execution are still to come. Explore the demo to get a feel for the direction.'],
-  ]
-  const nodeInfo: Record<string, { heading: string; text: string; status: string }> = {
-    Web: { heading: 'Your starting point. Anywhere.', text: 'A shared home for conversations, ideas, and agent workspaces. The first chapter of Fathom.', status: 'BUILDING NOW' },
-    Cloud: { heading: 'Give your ideas room to run.', text: 'Isolated environments for agents to browse, build, and execute. Designed to keep working when you step away.', status: 'ON THE HORIZON' },
-    Desktop: { heading: 'Intelligence, right beside you.', text: 'An agentic development environment for deep work, local projects, and collaboration with your computer.', status: 'ON THE HORIZON' },
-    CLI: { heading: 'A thought away. A command away.', text: 'Bring natural language and autonomous workflows into the place developers already call home.', status: 'ON THE HORIZON' },
-    Extensions: { heading: 'Meet you where you create.', text: 'Carry your models, projects, and context into the development tools you already use.', status: 'ON THE HORIZON' },
-  }
+  useEffect(() => {
+    const keydown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setDialog(null);
+      }
+    };
+    window.addEventListener("keydown", keydown);
+    return () => window.removeEventListener("keydown", keydown);
+  }, []);
 
-  return <div ref={page} className="site-shell">
-    <a className="skip-link" href="#main">Skip to content</a>
-    <header className="site-header">
-      <a className="brand" href="#" aria-label="Fathom home" onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: motionOff ? 'instant' : 'smooth' }) }}><Mark /><span>fathom</span></a>
-      <nav className={menu ? 'navigation is-open' : 'navigation'} id="navigation" aria-label="Main navigation">
-        <a href="#experience" onClick={e => { e.preventDefault(); goTo('experience') }}>The experience</a>
-        <a href="#intelligence" onClick={e => { e.preventDefault(); goTo('intelligence') }}>Intelligence</a>
-        <a href="#ecosystem" onClick={e => { e.preventDefault(); goTo('ecosystem') }}>The ecosystem</a>
-      </nav>
-      <div className="nav-actions"><a href="https://github.com/Fathom-core" target="_blank" rel="noopener noreferrer" className="github-link" aria-label="Fathom on GitHub"><Github size={19} /></a><button className="button button-small nav-cta" onClick={() => goTo('experience', true)}>Explore Fathom <ArrowUpRight size={15} /></button><button className="menu-toggle" aria-label={menu ? 'Close navigation' : 'Open navigation'} aria-expanded={menu} aria-controls="navigation" onClick={() => setMenu(!menu)}>{menu ? <X size={23} /> : <Menu size={23} />}</button></div>
-    </header>
+  const explore = (id?: Product) => {
+    if (id) setProduct(id);
+    setMenuOpen(false);
+    const target = document.getElementById("environments");
+    if (target)
+      smooth.current
+        ? smooth.current.scrollTo(target, { offset: -85 })
+        : target.scrollIntoView({ behavior: motionOff ? "instant" : "smooth" });
+  };
 
-    <main id="main">
-      <section className="hero" aria-labelledby="hero-heading">
-        <div className="hero-coordinates" aria-hidden="true"><span>EST. 2026</span><span>INDEPENDENT BY DESIGN</span></div>
-        <div className="hero-copy">
-          <button className="intro-label hero-enter" onClick={() => goTo('intelligence')}><span className="status-dot" /> A NEW DEPTH OF INTELLIGENCE <ArrowUpRight size={12} /></button>
-          <h1 id="hero-heading"><span className="hero-line"><span>Think freely.</span></span><span className="hero-line"><span>Build boldly.</span></span><span className="hero-line serif-line"><span>Go beyond.</span></span></h1>
-          <p className="hero-description hero-enter">A universe of intelligence, ready to move with you.<br className="desktop-break" /> From the spark of a thought to the things you create.</p>
-          <div className="hero-actions hero-enter"><button className="button button-primary" onClick={() => goTo('experience', true)}>Explore the possibilities <span><ArrowUpRight size={18} /></span></button><button className="text-button" onClick={() => goTo('intelligence')}>Meet Apollo <ArrowRight size={16} /></button></div>
-          <div className="hero-proof hero-enter"><span>OPEN WEIGHTS</span><i /><span>UNCENSORED THINKING</span><i /><span>BUILT TO ACT</span></div>
+  return (
+    <div className="site" ref={root}>
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
+      <header className="header">
+        <a href="#" className="brand" aria-label="Fathom home">
+          <Mark />
+          <span>fathom</span>
+        </a>
+        <nav
+          id="main-nav"
+          aria-label="Main navigation"
+          className={menuOpen ? "nav open" : "nav"}
+        >
+          {products.map((p) => (
+            <a
+              key={p.id}
+              href="#environments"
+              onClick={(e) => {
+                e.preventDefault();
+                explore(p.id);
+              }}
+            >
+              {p.name === "Desktop" ? "Desktop app" : p.name}
+            </a>
+          ))}
+          <a href="#vision" onClick={() => setMenuOpen(false)}>
+            Our vision
+          </a>
+        </nav>
+        <div className="header-actions">
+          <button className="login-link" onClick={() => setDialog("login")}>
+            Log in
+          </button>
+          <button
+            className="outline-button header-signup"
+            onClick={() => setDialog("signup")}
+          >
+            Sign up <ArrowUpRight size={14} />
+          </button>
+          <button
+            className="menu-button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-controls="main-nav"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X /> : <Menu />}
+          </button>
         </div>
-        <div className="core-stage">
-          <div className="core-grid" aria-hidden="true" />
-          <div className="core-aura" aria-hidden="true" />
-          <div className="orb-reticle reticle-one" aria-hidden="true" />
-          <div className="orb-reticle reticle-two" aria-hidden="true" />
-          <div className="hero-orb-wrap"><Suspense fallback={<div className="core-loading"><Mark /><span>AWAKENING THE CORE</span></div>}><Core mode={mode} paused={paused} reducedMotion={reducedMotion} /></Suspense></div>
-          <div className="core-caption"><span className="crosshair">+</span><div>THE FATHOM CORE<span>INTELLIGENCE IN MOTION</span></div></div>
-          <div className="core-marker"><span className="status-dot" /> OPEN BY NATURE</div>
-          <div className="drag-hint"><MousePointer2 size={12} /><span>DRAG TO DISCOVER</span><span>↔</span></div>
-          <span className="core-index" aria-hidden="true">F / 001</span>
+      </header>
+      <main id="main">
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero-atmosphere" aria-hidden="true" />
+          <div className="halo" aria-hidden="true">
+            <i />
+          </div>
+          <h1 className="hero-title" id="hero-title">
+            UNCENSORED
+          </h1>
+          <div className="sculpture-stage">
+            <Suspense
+              fallback={
+                <img
+                  className="sculpture-poster"
+                  src="/models/fathom-core.webp"
+                  alt="A crowned, blindfolded sculpture representing independent intelligence"
+                />
+              }
+            >
+              <Sculpture paused={motionOff} />
+            </Suspense>
+          </div>
+          <div className="hero-copy">
+            <p className="eyebrow">AI WITHOUT LIMITS</p>
+            <p className="hero-description">
+              Think freely.
+              <br />
+              Build what comes next.
+            </p>
+            <button
+              className="outline-button hero-cta"
+              onClick={() => explore()}
+            >
+              Explore Fathom <ArrowRight size={23} />
+            </button>
+          </div>
+          <aside className="hero-aside">
+            <span>YOUR MIND. UNRESTRICTED.</span>
+            <span>YOUR IDEAS. IN MOTION.</span>
+            <span>YOUR TOOLS. CONNECTED.</span>
+            <span>YOUR WORLD. BUILT BY YOU.</span>
+          </aside>
+          <div className="hero-bottom">
+            <a href="#vision" className="scroll-link">
+              <span className="scroll-line" />
+              SCROLL TO DISCOVER <ArrowDown size={13} />
+            </a>
+            <button
+              className="motion-control"
+              onClick={() => setPaused(!paused)}
+              aria-label={paused ? "Resume animations" : "Pause animations"}
+              aria-pressed={paused}
+            >
+              {motionOff ? <Play size={12} /> : <Pause size={12} />}
+              <span>{paused ? "RESUME MOTION" : "PAUSE MOTION"}</span>
+            </button>
+          </div>
+        </section>
+        <div className="foundation-strip">
+          <span>
+            <i /> INDEPENDENT INTELLIGENCE
+          </span>
+          <span>OPEN WEIGHTS</span>
+          <span>SELF-HOSTED</span>
+          <span>AGENTIC BY DESIGN</span>
+          <a href="#environments">
+            ONE CORE. EVERY ENVIRONMENT. <ArrowDown size={12} />
+          </a>
         </div>
-        <div className="hero-footer hero-enter"><button className="scroll-cue" onClick={() => goTo('experience')}><span><ArrowDown size={16} /></span>THERE’S MORE BELOW</button><div className="core-mode-caption" aria-live="polite"><span>{modes[mode].label}</span><p key={mode}>{modes[mode].detail}</p></div><div className="core-modes" aria-label="Explore the core">{modes.map((item, index) => <button key={item.name} className={mode === index ? 'active' : ''} aria-pressed={mode === index} onClick={() => setMode(index)}><span>0{index + 1}</span>{item.name}</button>)}</div></div>
-      </section>
-
-      <div className="principles-strip"><span>HUMAN CURIOSITY. MACHINE POSSIBILITY.</span><div><span><Sparkles size={14} /> Reason deeply</span><span><Code2 size={14} /> Build anything</span><span><Globe2 size={14} /> Explore further</span><span><Command size={14} /> Make it happen</span></div></div>
-
-      <section className="experience section-container" id="experience" aria-labelledby="experience-heading">
-        <div className="section-heading" data-reveal><div><span className="eyebrow"><span>01 /</span> THE EXPERIENCE</span><h2 id="experience-heading">Some ideas deserve<br />more than <em>an answer.</em></h2></div><p>Follow your curiosity all the way through.<br />Think with an AI. Create with an agent.<br />Give your next big idea a place to happen.</p></div>
-        <div data-reveal><Demo paused={paused} /></div>
-      </section>
-
-      <section className="intelligence section-container" id="intelligence" aria-labelledby="intelligence-heading">
-        <div className="intelligence-top" data-reveal><span className="eyebrow"><span>02 /</span> THE MINDS BEHIND IT</span><span className="fine-print">OPEN-WEIGHT MODELS. ONE SHARED UNIVERSE.</span></div>
-        <div className="model-layout">
-          <div className="model-copy" data-reveal><h2 id="intelligence-heading">Meet a mind<br />that goes <em>further.</em></h2><p>Introducing Apollo. Our flagship model for ambitious thoughts, complex problems, and the beautifully unexpected.</p><p>Apollo is the first name in a growing constellation of intelligence. Different minds. Shared context. A world of possibilities.</p><button className="text-button" onClick={() => goTo('experience', true)}>Explore the Apollo preview <ArrowUpRight size={17} /></button><div className="model-foundation"><span className="status-dot" /><span>SELF-HOSTED AT THE CORE.<br />INDEPENDENT IN SPIRIT.</span></div></div>
-          <div className="apollo-card" data-reveal><div className="apollo-card-top"><span>FATHOM INTELLIGENCE</span><span className="model-pill">FLAGSHIP / 01</span></div><div className="apollo-art" aria-hidden="true"><div className="sun-halo" /><div className="sun"><i /><i /><i /></div><div className="sun-orbit orbit-a" /><div className="sun-orbit orbit-b" /><span className="sun-star star-one">+</span><span className="sun-star star-two">+</span></div><div className="apollo-card-bottom"><div><span className="tiny-label">A NEW PERSPECTIVE</span><h3>Apollo<span>↗</span></h3></div><p>Reasoning. Coding.<br />Research. Possibility.</p></div><div className="apollo-tags"><span>OPEN WEIGHTS</span><span>UNCENSORED</span><span>AGENTIC</span></div></div>
+        <section className="vision section-wrap" id="vision">
+          <div className="section-index" data-reveal>
+            <span>01 / THE FATHOM VISION</span>
+            <span>THOUGHT → ACTION</span>
+          </div>
+          <div className="vision-layout">
+            <h2 className="vision-statement" data-reveal>
+              {"Intelligence should open doors."
+                .split(" ")
+                .map((word, index) => (
+                  <span className="vision-word" key={index}>
+                    {word}{" "}
+                  </span>
+                ))}
+              <span className="vision-emphasis">And walk through them.</span>
+            </h2>
+            <div className="vision-copy" data-reveal>
+              <span className="small-cross">+</span>
+              <p>
+                Fathom is an uncensored AI ecosystem for people who want to do
+                more with their minds.
+              </p>
+              <p>
+                Think through an idea. Build the software. Delegate the work.
+                One shared intelligence, with the tools to carry your intent
+                into the world.
+              </p>
+              <a className="text-link" href="#environments">
+                Meet your environments <ArrowDown size={15} />
+              </a>
+            </div>
+          </div>
+          <div className="vision-signature" aria-hidden="true">
+            <span>THINK</span>
+            <i />
+            <span>BUILD</span>
+            <i />
+            <span>DELEGATE</span>
+          </div>
+        </section>
+        <section className="environments section-wrap" id="environments">
+          <div className="section-index" data-reveal>
+            <span>02 / WAYS INTO FATHOM</span>
+            <span>FOUR ENVIRONMENTS. ONE INTELLIGENCE.</span>
+          </div>
+          <div className="section-title-row" data-reveal>
+            <h2>
+              Wherever you work.
+              <br />
+              <span>However you think.</span>
+            </h2>
+            <p>
+              A conversation is only the beginning.
+              <br />
+              Take Fathom where the work happens.
+            </p>
+          </div>
+          <div
+            className="product-tabs"
+            role="tablist"
+            aria-label="Fathom environments"
+            data-reveal
+          >
+            {products.map((p, i) => (
+              <button
+                key={p.id}
+                role="tab"
+                id={`tab-${p.id}`}
+                aria-selected={product === p.id}
+                aria-controls="product-panel"
+                className={product === p.id ? "selected" : ""}
+                onClick={() => setProduct(p.id)}
+                onKeyDown={(e) => {
+                  if (
+                    ["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)
+                  ) {
+                    e.preventDefault();
+                    const next =
+                      e.key === "Home"
+                        ? 0
+                        : e.key === "End"
+                          ? 3
+                          : (i + (e.key === "ArrowRight" ? 1 : 3)) % 4;
+                    setProduct(products[next].id);
+                    document
+                      .getElementById(`tab-${products[next].id}`)
+                      ?.focus();
+                  }
+                }}
+                tabIndex={product === p.id ? 0 : -1}
+              >
+                <span>0{i + 1}</span>
+                <p.icon size={18} />
+                <strong>{p.name}</strong>
+                <ArrowUpRight size={16} />
+              </button>
+            ))}
+          </div>
+          <div
+            className="product-panel"
+            id="product-panel"
+            role="tabpanel"
+            aria-labelledby={`tab-${product}`}
+            data-reveal
+          >
+            <div className="product-copy" key={product}>
+              <span className="eyebrow">{active.tag}</span>
+              <h3>
+                {active.title.split("\n").map((line, i) => (
+                  <span key={line}>
+                    {line}
+                    {i === 0 && <br />}
+                  </span>
+                ))}
+              </h3>
+              <p>{active.copy}</p>
+              <ul>
+                {active.features.map((feature) => (
+                  <li key={feature}>
+                    <Check size={13} />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <div className="development-label">
+                <i /> IN DEVELOPMENT
+              </div>
+            </div>
+            <div className="product-visual">
+              <div className="preview-caption">
+                <span>FATHOM / {product.toUpperCase()}</span>
+                <span>INTERACTIVE CONCEPT</span>
+              </div>
+              <ProductPreview product={product} paused={motionOff} />
+            </div>
+          </div>
+        </section>
+        <section className="agency section-wrap">
+          <div className="section-index" data-reveal>
+            <span>03 / FROM INTENT TO IMPACT</span>
+            <span>BUILT TO FOLLOW THROUGH</span>
+          </div>
+          <div className="agency-heading" data-reveal>
+            <h2>
+              Not just an answer.
+              <br />
+              <span>A way forward.</span>
+            </h2>
+            <p>
+              An agent needs more than a model.
+              <br />
+              It needs context, tools, and room to act.
+            </p>
+          </div>
+          <div className="agent-flow" data-reveal>
+            <div className="intent-block">
+              <span className="flow-number">01 — YOUR INTENT</span>
+              <div className="intent-note">
+                <span className="quote-mark">“</span>
+                <p>
+                  Take this idea
+                  <br />
+                  and make it real.
+                </p>
+                <span className="note-cursor" />
+              </div>
+              <p>
+                You bring the direction.
+                <br />
+                Fathom helps find the path.
+              </p>
+            </div>
+            <div className="reasoning-block">
+              <span className="flow-number">02 — AGENTIC INTELLIGENCE</span>
+              <div className="reasoning-diagram">
+                <div className="reason-ring ring-outer" />
+                <div className="reason-ring ring-inner" />
+                <svg viewBox="0 0 300 220" aria-hidden="true">
+                  <path d="M50 110 H250 M150 30 V190" />
+                  <path
+                    className="thought-signal"
+                    d="M50 110 H150 V30 M150 190 V110 H250"
+                  />
+                </svg>
+                <div className="reason-core">
+                  <Mark />
+                </div>
+                <span className="reason-label reason-top">REASON</span>
+                <span className="reason-label reason-right">ACT</span>
+                <span className="reason-label reason-bottom">VERIFY</span>
+                <span className="reason-label reason-left">REFINE</span>
+              </div>
+              <p>
+                A continuous loop of reasoning,
+                <br />
+                tool use, and verification.
+              </p>
+            </div>
+            <div className="outcome-block">
+              <span className="flow-number">03 — WORK YOU CAN REVIEW</span>
+              <div className="outcome-stack">
+                <div className="outcome-item">
+                  <Code2 size={16} />
+                  <span>Implementation</span>
+                  <span className="outcome-check">
+                    <Check size={12} />
+                  </span>
+                </div>
+                <div className="outcome-item">
+                  <Terminal size={16} />
+                  <span>Tests & execution</span>
+                  <span className="outcome-check">
+                    <Check size={12} />
+                  </span>
+                </div>
+                <div className="outcome-item">
+                  <Github size={16} />
+                  <span>Changes for review</span>
+                  <ArrowUpRight size={13} />
+                </div>
+              </div>
+              <p>
+                Visible steps. Tangible outputs.
+                <br />
+                You stay in the loop.
+              </p>
+            </div>
+          </div>
+          <p className="concept-note">
+            THE AGENT WORKFLOW WE’RE BUILDING. ILLUSTRATIVE, NOT A LIVE
+            EXECUTION.
+          </p>
+        </section>
+        <section className="connected section-wrap" id="ecosystem">
+          <div className="section-index" data-reveal>
+            <span>04 / THE CONNECTED ECOSYSTEM</span>
+            <span>EVERYTHING COMES BACK TO YOU</span>
+          </div>
+          <div className="connected-layout">
+            <div className="connected-copy" data-reveal>
+              <h2>
+                Different doors.
+                <br />
+                <span>The same mind.</span>
+              </h2>
+              <p>
+                A shared AI foundation. A common identity. Context that is
+                designed to travel with your work.
+              </p>
+              <p>
+                Start with a conversation. Take it into your editor. Give a
+                cloud agent the next step. Keep your terminal in the loop.
+              </p>
+              <span className="eyebrow connection-hint">
+                SELECT AN ENVIRONMENT TO EXPLORE <ArrowRight size={13} />
+              </span>
+            </div>
+            <div className={`ecosystem-map active-${node}`} data-reveal>
+              <svg
+                className="ecosystem-lines"
+                viewBox="0 0 600 380"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path d="M300 190 C300 70 100 190 100 65 M300 190 C300 70 500 190 500 65 M300 190 C300 310 100 190 100 315 M300 190 C300 310 500 190 500 315" />
+                <path
+                  className="ecosystem-path"
+                  d="M100 65 C100 190 300 70 300 190 C300 310 500 190 500 315 M500 65 C500 190 300 70 300 190 C300 310 100 190 100 315"
+                />
+              </svg>
+              <div className="ecosystem-core">
+                <Mark />
+                <span>FATHOM</span>
+                <small>SHARED INTELLIGENCE</small>
+              </div>
+              {products.map((p, index) => (
+                <button
+                  key={p.id}
+                  className={`ecosystem-node ecosystem-node-${index} ${node === p.id ? "selected" : ""}`}
+                  onClick={() => setNode(p.id)}
+                  aria-pressed={node === p.id}
+                >
+                  <p.icon size={21} />
+                  <span>{p.name}</span>
+                  <ArrowUpRight size={12} />
+                </button>
+              ))}
+              <div className="ecosystem-status" aria-live="polite">
+                <i />
+                <span>
+                  {activeNode.name.toUpperCase()} ·{" "}
+                  {activeNode.features[0].toUpperCase()}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="architecture-notes" data-reveal>
+            <div>
+              <span>01</span>
+              <strong>One identity</strong>
+              <p>A consistent home for your work.</p>
+            </div>
+            <div>
+              <span>02</span>
+              <strong>Shared context</strong>
+              <p>Your ideas should keep their momentum.</p>
+            </div>
+            <div>
+              <span>03</span>
+              <strong>Explicit control</strong>
+              <p>Separate environments. Scoped permissions.</p>
+            </div>
+          </div>
+        </section>
+        <section className="questions section-wrap" id="questions">
+          <div data-reveal>
+            <span className="eyebrow">A LITTLE MORE CONTEXT</span>
+            <h2>
+              Good questions.
+              <br />
+              <span>Open answers.</span>
+            </h2>
+            <span className="faq-monogram" aria-hidden="true">
+              <Mark />
+            </span>
+          </div>
+          <div className="faq-list" data-reveal>
+            {questions.map(([q, a], i) => (
+              <div className={`faq-item ${faq === i ? "open" : ""}`} key={q}>
+                <h3>
+                  <button
+                    aria-expanded={faq === i}
+                    aria-controls={`answer-${i}`}
+                    onClick={() => setFaq(faq === i ? null : i)}
+                  >
+                    {q}
+                    <Plus size={18} />
+                  </button>
+                </h3>
+                <div
+                  className="faq-answer"
+                  id={`answer-${i}`}
+                  inert={faq !== i}
+                >
+                  <div>
+                    <p>{a}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+        <section className="closing">
+          <div className="closing-light" aria-hidden="true" />
+          <div className="section-wrap closing-content" data-reveal>
+            <span className="eyebrow">
+              INDEPENDENT BY NATURE. AGENTIC BY DESIGN.
+            </span>
+            <h2>
+              Your imagination.
+              <br />
+              <span>No ceiling.</span>
+            </h2>
+            <div className="closing-actions">
+              <button className="outline-button" onClick={() => explore()}>
+                Find your environment <ArrowRight size={20} />
+              </button>
+              <a
+                className="text-link"
+                href="https://github.com/fathom-core"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Follow the build <ArrowUpRight size={16} />
+              </a>
+            </div>
+            <p>Fathom is taking shape. This is the beginning.</p>
+          </div>
+          <div className="closing-word" aria-hidden="true">
+            FATHOM
+          </div>
+        </section>
+      </main>
+      <footer className="footer section-wrap">
+        <div className="footer-top">
+          <a className="brand" href="#">
+            <Mark />
+            <span>fathom</span>
+          </a>
+          <p>
+            Think with AI. Build with AI.
+            <br />
+            Delegate real work to AI.
+          </p>
+          <div>
+            {products.map((p) => (
+              <a
+                key={p.id}
+                href="#environments"
+                onClick={(e) => {
+                  e.preventDefault();
+                  explore(p.id);
+                }}
+              >
+                {p.name}
+                <ArrowUpRight size={12} />
+              </a>
+            ))}
+          </div>
         </div>
-      </section>
-
-      <section className="statement section-container" aria-label="Our philosophy"><div className="statement-rule"><Mark /><span>THE FATHOM PHILOSOPHY</span></div><p>{'We believe the most interesting things happen when human curiosity meets intelligence that has room to explore.'.split(' ').map((word, i) => <span key={i} className="statement-word">{word} </span>)}<em> Let’s go there.</em></p><span className="statement-footnote">LESS FRICTION. MORE POSSIBILITY.</span></section>
-
-      <section className="ecosystem section-container" id="ecosystem" aria-labelledby="ecosystem-heading">
-        <div className="section-heading" data-reveal><div><span className="eyebrow"><span>03 /</span> A CONNECTED UNIVERSE</span><h2 id="ecosystem-heading">Many ways in.<br /><em>One Fathom.</em></h2></div><p>Your ideas shouldn’t have to start over.<br />One identity, shared context, and a<br />continuous thread across everything.</p></div>
-        <div className="ecosystem-panel" data-reveal>
-          <div className="orbit-map"><div className="map-orbit map-orbit-1" /><div className="map-orbit map-orbit-2" /><div className="map-orbit map-orbit-3" /><svg className="connections" viewBox="0 0 660 420" aria-hidden="true"><path d="M330 210 L150 90 M330 210 L485 95 M330 210 L540 275 M330 210 L205 335 M330 210 L105 230" /></svg><div className="map-center"><Mark /><span>fathom</span></div>{[{ name: 'Web', icon: Globe2 }, { name: 'Cloud', icon: Command }, { name: 'Desktop', icon: Monitor }, { name: 'CLI', icon: Terminal }, { name: 'Extensions', icon: Code2 }].map((item, i) => <button key={item.name} className={`map-node node-${i} ${selectedNode === item.name ? 'selected' : ''}`} onClick={() => setSelectedNode(item.name)} aria-pressed={selectedNode === item.name}><span><item.icon size={19} /></span><strong>{item.name}</strong>{item.name === 'Web' && <small>START HERE</small>}</button>)}</div>
-          <div className="ecosystem-detail" key={selectedNode}><span className="ecosystem-status"><span className={selectedNode === 'Web' ? 'status-dot' : 'future-dot'} />{nodeInfo[selectedNode].status}</span><span className="ecosystem-product">FATHOM {selectedNode.toUpperCase()}</span><h3>{nodeInfo[selectedNode].heading}</h3><p>{nodeInfo[selectedNode].text}</p>{selectedNode === 'Web' ? <button className="text-button" onClick={() => goTo('experience', true)}>Experience the preview <ArrowUpRight size={16} /></button> : <span className="roadmap-note">A future chapter <ChevronRight size={13} /></span>}<div className="ecosystem-pagination">{Object.keys(nodeInfo).map(node => <button key={node} className={selectedNode === node ? 'active' : ''} onClick={() => setSelectedNode(node)} aria-label={`Explore Fathom ${node}`} aria-pressed={selectedNode === node} />)}</div></div>
+        <div className="footer-bottom">
+          <span>© {new Date().getFullYear()} Fathom</span>
+          <span className="build-status">
+            <i /> IN DEVELOPMENT
+          </span>
+          <a
+            href="https://github.com/fathom-core"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Github size={14} /> Built in the open <ArrowUpRight size={13} />
+          </a>
+          <a href="#">Back to top ↑</a>
         </div>
-      </section>
-
-      <section className="faq-section section-container" aria-labelledby="faq-heading"><div data-reveal><span className="eyebrow"><span>04 /</span> A LITTLE MORE CONTEXT</span><h2 id="faq-heading">Curiosity<br /><em>looks good on you.</em></h2></div><div className="faq-list" data-reveal>{faq.map(([question, answer], i) => <div className={`faq-item ${openFaq === i ? 'open' : ''}`} key={question}><h3><button aria-expanded={openFaq === i} aria-controls={`faq-${i}`} id={`faq-question-${i}`} onClick={() => setOpenFaq(openFaq === i ? null : i)}><span>{question}</span><Plus size={18} /></button></h3><div className="faq-answer" id={`faq-${i}`} role="region" aria-labelledby={`faq-question-${i}`} inert={openFaq !== i}><div><p>{answer}</p></div></div></div>)}</div></section>
-
-      <section className="closing" aria-labelledby="closing-heading"><div className="closing-orbits" aria-hidden="true"><i /><i /><i /><i /></div><div className="closing-content" data-reveal><span className="eyebrow">THE NEXT CHAPTER STARTS WITH A THOUGHT</span><h2 id="closing-heading">What’s on<br /><em>your horizon?</em></h2><button className="button button-dark" onClick={() => goTo('experience', true)}>Let’s find out <ArrowUpRight size={18} /></button><p>A first look at what we’re building. A world still to explore.</p></div><span className="closing-coordinate">FATHOM / POSSIBILITIES AHEAD</span></section>
-    </main>
-
-    <footer className="site-footer"><div className="footer-top"><a className="brand" href="#" aria-label="Fathom home"><Mark /><span>fathom</span></a><p>Independent intelligence.<br />Infinite possibility.</p><div><a href="https://github.com/Fathom-core" target="_blank" rel="noopener noreferrer">Follow the build <ArrowUpRight size={15} /></a><button onClick={share}>{copied ? 'Link copied' : 'Share the possibility'}{copied ? <Check size={15} /> : <ArrowUpRight size={15} />}</button></div></div><div className="footer-wordmark" aria-hidden="true">fathom<span>↗</span></div><div className="footer-bottom"><span>© {new Date().getFullYear()} FATHOM CORE</span><span>BUILT WITH CURIOSITY. DESIGNED FOR POSSIBILITY.</span><button className="motion-toggle" onClick={() => setPaused(!paused)} aria-pressed={paused} disabled={reducedMotion}>{motionOff ? <Play size={11} /> : <Pause size={11} />}{reducedMotion ? 'REDUCED MOTION' : paused ? 'RESUME MOTION' : 'PAUSE MOTION'}</button></div></footer>
-  </div>
+      </footer>
+      <dialog
+        ref={dialogRef}
+        className="access-dialog"
+        aria-labelledby="access-title"
+        aria-describedby="access-description"
+        onCancel={() => setDialog(null)}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setDialog(null);
+        }}
+      >
+        <div className="dialog-inner">
+          <button
+            className="dialog-close"
+            aria-label="Close dialog"
+            onClick={() => setDialog(null)}
+          >
+            <X size={20} />
+          </button>
+          <Mark />
+          <span className="eyebrow">FATHOM / EARLY CHAPTERS</span>
+          <h2 id="access-title">
+            {dialog === "login"
+              ? "Your next workspace\nis taking shape."
+              : "Something independent\nis coming."}
+          </h2>
+          <p id="access-description">
+            Fathom accounts and live AI access are still in development. Explore
+            the product concepts here, or follow progress on GitHub.
+          </p>
+          <a
+            className="outline-button"
+            href="https://github.com/fathom-core"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Follow the build <ArrowUpRight size={17} />
+          </a>
+          <button
+            className="text-link"
+            onClick={() => {
+              smooth.current?.start();
+              setDialog(null);
+              explore();
+            }}
+          >
+            Explore the environments <ChevronDown size={15} />
+          </button>
+        </div>
+      </dialog>
+    </div>
+  );
 }
