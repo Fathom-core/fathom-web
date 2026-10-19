@@ -1591,3 +1591,187 @@ h2 > span {
   margin-top: 18px;
 }
 
+.connected {
+  padding-top: 85px;
+  padding-bottom: 90px;
+}
+.connected-layout {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  gap: 0;
+  align-items: center;
+  padding: 65px 0;
+}
+.connected-copy {
+  max-width: 390px;
+}
+.connected-copy h2 {
+  font-size: clamp(35px, 3.5vw, 57px);
+}
+.connected-copy > p {
+  font-size: 13px;
+  line-height: 1.9;
+  color: #9e8caa;
+  margin-top: 24px;
+  max-width: 340px;
+}
+.connection-hint {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 7px;
+  letter-spacing: 1px;
+  margin-top: 35px;
+  color: #9b7eb0;
+}
+.ecosystem-map {
+  height: 390px;
+  position: relative;
+  background: radial-gradient(ellipse, #39204422, transparent 60%);
+}
+.ecosystem-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: #3e294b;
+  stroke-width: 1;
+}
+.ecosystem-path {
+  stroke: #9870bd;
+  stroke-width: 1;
+  stroke-dasharray: 1400;
+  stroke-dashoffset: 1400;
+}
+.ecosystem-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 1px solid #79568e;
+  box-shadow:
+    0 0 0 12px #a37ac607,
+    0 0 0 13px #67477f2f;
+  background: radial-gradient(circle, #382243, #110c17 80%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+}
+.ecosystem-core .mark {
+  color: #d8b3f7;
+  width: 30px;
+  height: 35px;
+}
+.ecosystem-core > span {
+  font-size: 11px;
+  letter-spacing: 3px;
+  margin-top: 4px;
+  color: #d1b2e4;
+}
+.ecosystem-core > small {
+  font-family: var(--mono);
+  font-size: 5px;
+  letter-spacing: 0.9px;
+  color: #a47cba;
+}
+.ecosystem-node {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 18px 20px;
+  min-width: 143px;
+  border: 1px solid #3e2b4c;
+  border-radius: 6px;
+  background: #120d18;
+  color: #9c82ad;
+  box-shadow: 0 15px 30px #0003;
+  transition:
+    background 0.3s,
+    transform 0.3s,
+    border 0.3s,
+    color 0.3s;
+  font-size: 12px;
+}
+.ecosystem-node > svg:last-child {
+  margin-left: auto;
+  color: #78568c;
+}
+.ecosystem-node.selected {
+  border-color: #a877cd;
+  color: #e1c3f7;
+  background: #25172f;
+  box-shadow: 0 0 22px #ae77d015;
+}
+.ecosystem-node:hover {
+  border-color: #a877cd;
+  transform: translateY(-3px);
+}
+.ecosystem-node-0 {
+  top: 10%;
+  left: 6%;
+}
+.ecosystem-node-1 {
+  top: 10%;
+  right: 6%;
+}
+.ecosystem-node-2 {
+  bottom: 10%;
+  left: 6%;
+}
+.ecosystem-node-3 {
+  bottom: 10%;
+  right: 6%;
+}
+.ecosystem-status {
+  position: absolute;
+  bottom: -17px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 7px;
+  letter-spacing: 1px;
+  font-family: var(--mono);
+  color: #9677ac;
+}
+.ecosystem-status i {
+  width: 4px;
+  height: 4px;
+}
+.architecture-notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 25px;
+  border-top: 1px solid var(--line);
+}
+.architecture-notes > div {
+  position: relative;
+  padding: 28px 0 0 32px;
+}
+.architecture-notes > div > span {
+  position: absolute;
+  left: 0;
+  top: 31px;
+  font-family: var(--mono);
+  font-size: 8px;
+  color: #79518f;
+}
+.architecture-notes strong {
+  font-weight: 450;
+  font-size: 14px;
+  color: #cbb5da;
+}
+.architecture-notes p {
+  font-size: 11px;
+  color: #816c8d;
+  margin-top: 9px;
+}
