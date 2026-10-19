@@ -1775,3 +1775,68 @@ h2 > span {
   color: #816c8d;
   margin-top: 9px;
 }
+.questions {
+  border-top: 1px solid var(--line);
+  padding-top: 100px;
+  padding-bottom: 110px;
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 11%;
+}
+.questions h2 {
+  margin-top: 25px;
+  font-size: clamp(32px, 3.3vw, 53px);
+}
+.faq-monogram {
+  display: block;
+  margin-top: 50px;
+  color: #533462;
+}
+.faq-monogram .mark {
+  width: 50px;
+  height: 60px;
+}
+.faq-item {
+  border-bottom: 1px solid #38243f;
+}
+.faq-item:first-child {
+  border-top: 1px solid #38243f;
+}
+.faq-item h3 {
+  font-size: 14px;
+  font-weight: 450;
+}
+.faq-item h3 button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  text-align: left;
+  padding: 24px 0;
+  color: #cdb6dc;
+}
+.faq-item h3 button > svg {
+  color: #9570aa;
+  transition: transform 0.4s;
+}
+.faq-item.open h3 button > svg {
+  transform: rotate(45deg);
+}
+.faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s;
+}
+.faq-answer > div {
+  overflow: hidden;
+}
+.faq-item.open .faq-answer {
+  grid-template-rows: 1fr;
+}
+.faq-answer p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #9c84aa;
+  padding: 0 30px 23px 0;
+}
