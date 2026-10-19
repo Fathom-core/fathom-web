@@ -1390,3 +1390,204 @@ h2 > span {
   border-top: 1px solid #3b2548;
 }
 
+.agency {
+  padding-top: 90px;
+  padding-bottom: 90px;
+  border-top: 1px solid var(--line);
+}
+.agency-heading {
+  padding-bottom: 50px;
+}
+.agent-flow {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr 1fr;
+  border-block: 1px solid var(--line);
+}
+.agent-flow > div {
+  padding: 30px 27px 32px;
+  position: relative;
+  min-width: 0;
+}
+.agent-flow > div:first-child {
+  padding-left: 0;
+}
+.agent-flow > div + div {
+  border-left: 1px solid var(--line);
+}
+.flow-number {
+  font-size: 8px;
+  color: #a28bad;
+  letter-spacing: 1px;
+  font-family: var(--mono);
+}
+.agent-flow > div > p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #93829e;
+}
+.intent-note {
+  height: 218px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+.intent-note > p {
+  font-size: 27px;
+  line-height: 1.3;
+  color: #d4c2df;
+  letter-spacing: -1px;
+}
+.quote-mark {
+  font-family: serif;
+  font-size: 75px;
+  color: #644b77;
+  align-self: flex-start;
+  margin-top: 28px;
+}
+.note-cursor {
+  height: 24px;
+  width: 1px;
+  background: #b690d4;
+  align-self: center;
+  position: absolute;
+  left: 210px;
+  top: 132px;
+  animation: blink 1.6s steps(2) infinite;
+}
+.reasoning-diagram {
+  height: 218px;
+  position: relative;
+  max-width: 320px;
+  margin: auto;
+}
+.reasoning-diagram > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: #51415f;
+  stroke-width: 0.75;
+}
+.reasoning-diagram .thought-signal {
+  stroke: #bd91e4;
+  stroke-width: 1;
+  stroke-dasharray: 12 180;
+  animation: thought-flow 6s linear infinite;
+}
+.reason-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid #715582;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.ring-outer {
+  width: 130px;
+  height: 130px;
+  border-style: dashed;
+  opacity: 0.4;
+  animation: ring-turn 40s linear infinite;
+}
+.ring-inner {
+  width: 100px;
+  height: 100px;
+  border-color: #4b375a;
+}
+.reason-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 57px;
+  height: 57px;
+  display: grid;
+  place-items: center;
+  background: #201529;
+  border: 1px solid #735285;
+  box-shadow: 0 0 25px #a66ad015;
+}
+.reason-core .mark {
+  color: #cfb0eb;
+  width: 25px;
+}
+.reason-label {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: #aa8abf;
+  background: #09080c;
+  padding: 3px;
+}
+.reason-top {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.reason-bottom {
+  bottom: 19px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.reason-left {
+  top: 50%;
+  left: 1%;
+  transform: translateY(-50%);
+}
+.reason-right {
+  top: 50%;
+  right: 3%;
+  transform: translateY(-50%);
+}
+.outcome-stack {
+  height: 218px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  perspective: 600px;
+}
+.outcome-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 14px;
+  background: linear-gradient(100deg, #211529, #100c15);
+  border: 1px solid #483052;
+  border-radius: 3px;
+  box-shadow: 0 6px 20px #0002;
+  font-size: 10px;
+  color: #bca1cc;
+  transform: rotateY(-9deg);
+  transition:
+    transform 0.4s,
+    border 0.3s;
+}
+.outcome-item:hover {
+  transform: rotateY(0) translateX(-4px);
+  border-color: #a173bd;
+}
+.outcome-item > svg:last-child,
+.outcome-check {
+  margin-left: auto;
+  color: #c6a2dc;
+}
+.outcome-check {
+  width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #725582;
+  border-radius: 50%;
+}
+.concept-note {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: #67566f;
+  margin-top: 18px;
+}
+
