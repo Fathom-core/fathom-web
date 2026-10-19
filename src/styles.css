@@ -561,3 +561,179 @@ body:has(dialog[open]) {
   width: 90px;
   background: linear-gradient(90deg, #51435e, transparent);
 }
+.environments {
+  padding-top: 105px;
+  padding-bottom: 105px;
+}
+.section-title-row,
+.agency-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 45px 0 55px;
+}
+h2 {
+  font-size: clamp(37px, 4vw, 66px);
+  line-height: 1.12;
+  font-weight: 450;
+  letter-spacing: -2.7px;
+}
+h2 > span {
+  color: #93819f;
+}
+.section-title-row > p,
+.agency-heading > p {
+  color: #94889e;
+  font-size: 14px;
+  line-height: 1.9;
+  padding-bottom: 6px;
+}
+.product-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid #3b2e46;
+}
+.product-tabs > button {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 21px 16px;
+  color: #82748f;
+  position: relative;
+  text-align: left;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.3s,
+    background 0.3s;
+}
+.product-tabs > button:first-child {
+  padding-left: 0;
+}
+.product-tabs > button:after {
+  content: "";
+  height: 2px;
+  background: var(--violet);
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s;
+}
+.product-tabs > button.selected:after {
+  transform: scaleX(1);
+}
+.product-tabs > button.selected {
+  color: #e7d5ff;
+  background: linear-gradient(0deg, #b581ed0a, transparent);
+}
+.product-tabs > button:hover {
+  color: #d7bcef;
+}
+.product-tabs > button > span {
+  font-family: var(--mono);
+  font-size: 9px;
+  margin-right: 10px;
+  opacity: 0.65;
+}
+.product-tabs strong {
+  font-size: 15px;
+  font-weight: 500;
+}
+.product-tabs > button > svg:last-child {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.product-tabs > button.selected > svg:last-child {
+  opacity: 1;
+}
+.product-panel {
+  display: grid;
+  grid-template-columns: 31% 69%;
+  padding-top: 50px;
+  gap: 0;
+  min-height: 555px;
+}
+.product-copy {
+  padding: 36px 35px 25px 0;
+  animation: content-in 0.55s both;
+}
+.product-copy .eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #b492d7;
+}
+.product-copy h3 {
+  font-size: clamp(25px, 2.4vw, 37px);
+  line-height: 1.28;
+  letter-spacing: -1.25px;
+  font-weight: 450;
+  margin-top: 22px;
+}
+.product-copy > p {
+  font-size: 13px;
+  color: #9e94aa;
+  line-height: 1.85;
+  max-width: 320px;
+  margin-top: 25px;
+}
+.product-copy ul {
+  list-style: none;
+  padding: 0;
+  margin: 26px 0 31px;
+  display: grid;
+  gap: 12px;
+}
+.product-copy li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 11px;
+  color: #bcafcb;
+}
+.product-copy li svg {
+  color: #ab81db;
+}
+.development-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #766a84;
+}
+.development-label i {
+  width: 4px;
+  height: 4px;
+  background: #83708f;
+}
+.product-visual {
+  min-width: 0;
+  position: relative;
+  padding-left: 30px;
+}
+.product-visual:before {
+  content: "";
+  position: absolute;
+  inset: 10% -10% -10%;
+  background: radial-gradient(ellipse at center, #47245e26, transparent 67%);
+  pointer-events: none;
+  z-index: -1;
+}
+.preview-caption {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #756482;
+  margin-bottom: 16px;
+}
+.preview-transition {
+  animation: preview-in 0.65s cubic-bezier(0.23, 1, 0.32, 1) both;
+  min-height: 420px;
+}
