@@ -1,5 +1,20 @@
-import { useState } from "react";
-import { ArrowUp, ArrowUpRight, Check, ChevronDown, ChevronRight, Circle, Code2, FileCode2, GitBranch, MessageSquare, MoreHorizontal, Plus, Terminal } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ArrowUp,
+  ArrowUpRight,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Circle,
+  Code2,
+  FileCode2,
+  GitBranch,
+  MessageSquare,
+  MoreHorizontal,
+  Play,
+  Plus,
+  Terminal,
+} from "lucide-react";
 
 export type Product = "chat" | "cloud" | "desktop" | "cli";
 const conversations = [
@@ -413,6 +428,89 @@ function DesktopPreview() {
     </div>
   );
 }
-export default function ProductPreview({ product }: { product: Product; paused: boolean }) {
-  return <div className="preview-transition" key={product}>{product === "desktop" ? <DesktopPreview /> : product === "cloud" ? <CloudPreview /> : <ChatPreview />}</div>;
+const terminalLines = [
+  "$ fathom",
+  "",
+  "  FATHOM  /  YOUR TERMINAL, WITH A MIND",
+  "  ~/studio · local workspace",
+  "",
+  "› Add a command palette and test the keyboard shortcuts.",
+  "",
+  "  ◇ Reading project context",
+  "  ◇ Planning implementation",
+  "  + CommandMenu.tsx",
+  "  + useShortcut.ts",
+  "  ✓ Keyboard interaction tests passed",
+  "",
+  "  2 files changed. Ready for your review.",
+  "  Your next move › _",
+];
+function CliPreview({ paused }: { paused: boolean }) {
+  const [line, setLine] = useState(terminalLines.length);
+  useEffect(() => {
+    if (paused || line >= terminalLines.length) return;
+    const timer = setTimeout(() => setLine(line + 1), line < 5 ? 90 : 230);
+    return () => clearTimeout(timer);
+  }, [line, paused]);
+  return (
+    <div className="app-window cli-window">
+      <WindowBar name="fathom — zsh" right="LOCAL WORKSPACE" />
+      <div className="cli-body">
+        <div className="cli-wordmark" aria-hidden="true">
+          FATHOM<span>_</span>
+        </div>
+        <pre>
+          {terminalLines.slice(0, paused ? undefined : line).map((text, i) => (
+            <span
+              className={
+                text.includes("✓")
+                  ? "terminal-success"
+                  : text.startsWith("›")
+                    ? "cli-prompt"
+                    : text.includes(" + ")
+                      ? "terminal-add"
+                      : ""
+              }
+              key={i}
+            >
+              {text}
+              {"\n"}
+            </span>
+          ))}
+        </pre>
+        <button
+          className="replay-button"
+          onClick={() => setLine(1)}
+          disabled={paused}
+        >
+          <Play size={12} /> Replay sample session
+        </button>
+      </div>
+      <div className="cli-footer">
+        <span>ILLUSTRATIVE SESSION · NOT A LIVE TERMINAL</span>
+        <span>YOUR TOOLS. YOUR TERMS.</span>
+      </div>
+    </div>
+  );
+}
+export default function ProductPreview({
+  product,
+  paused,
+}: {
+  product: Product;
+  paused: boolean;
+}) {
+  return (
+    <div className="preview-transition" key={product}>
+      {product === "chat" ? (
+        <ChatPreview />
+      ) : product === "cloud" ? (
+        <CloudPreview />
+      ) : product === "desktop" ? (
+        <DesktopPreview />
+      ) : (
+        <CliPreview paused={paused} />
+      )}
+    </div>
+  );
 }
