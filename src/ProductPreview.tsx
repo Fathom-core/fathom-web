@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUp, ChevronDown, MessageSquare, MoreHorizontal, Plus } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Check, ChevronDown, Circle, Code2, GitBranch, MessageSquare, MoreHorizontal, Plus, Terminal } from "lucide-react";
 
 export type Product = "chat" | "cloud" | "desktop" | "cli";
 const conversations = [
@@ -124,6 +124,128 @@ function ChatPreview() {
     </div>
   );
 }
+const cloudSteps = [
+  {
+    label: "Understand",
+    time: "00:04",
+    lines: [
+      "$ inspecting repository",
+      "src/ → 24 files",
+      "package.json → React + TypeScript",
+      "✓ Project context ready",
+    ],
+    title: "Understanding the workspace",
+  },
+  {
+    label: "Implement",
+    time: "00:38",
+    lines: [
+      "$ creating command palette",
+      "+ src/components/CommandMenu.tsx",
+      "+ src/hooks/useKeyboardShortcut.ts",
+      "✓ Keyboard navigation added",
+    ],
+    title: "Building the implementation",
+  },
+  {
+    label: "Verify",
+    time: "01:12",
+    lines: [
+      "$ npm run test",
+      "✓ opens with ⌘K",
+      "✓ filters commands by query",
+      "✓ returns focus on close",
+      "3 tests passed",
+    ],
+    title: "Checking the result",
+  },
+  {
+    label: "Review",
+    time: "01:26",
+    lines: [
+      "$ preparing changes",
+      "2 files changed · +142 lines",
+      "✓ Implementation ready for review",
+      "Waiting for your next step.",
+    ],
+    title: "Ready for your review",
+  },
+];
+function CloudPreview() {
+  const [step, setStep] = useState(2);
+  return (
+    <div className="app-window cloud-window">
+      <WindowBar name="fathom / cloud" />
+      <div className="cloud-content">
+        <div className="cloud-breadcrumb">
+          <GitBranch size={13} /> workspace / studio <ChevronDown size={12} />
+          <span className="ui-pill">ISOLATED WORKSPACE</span>
+        </div>
+        <div className="task-heading">
+          <span className="task-symbol">
+            <Code2 size={20} />
+          </span>
+          <div>
+            <span className="ui-label">DELEGATED TASK</span>
+            <h4>Add a keyboard-first command palette</h4>
+          </div>
+          <MoreHorizontal size={17} />
+        </div>
+        <div className="task-meta">
+          <span>
+            <GitBranch size={11} /> fathom/command-palette
+          </span>
+          <span>Sample run · {cloudSteps[step].time}</span>
+        </div>
+        <div className="cloud-timeline">
+          {cloudSteps.map((s, i) => (
+            <button
+              key={s.label}
+              className={i === step ? "current" : i < step ? "done" : ""}
+              onClick={() => setStep(i)}
+            >
+              <span>{i < step ? <Check size={12} /> : `0${i + 1}`}</span>
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <div className="cloud-terminal">
+          <div>
+            <Terminal size={13} />
+            {cloudSteps[step].title}
+            <span>OUTPUT</span>
+          </div>
+          <pre key={step}>
+            {cloudSteps[step].lines.map((line, i) => (
+              <span
+                className={
+                  line.startsWith("✓")
+                    ? "terminal-success"
+                    : line.startsWith("+")
+                      ? "terminal-add"
+                      : ""
+                }
+                key={i}
+              >
+                {line}
+                {"\n"}
+              </span>
+            ))}
+          </pre>
+        </div>
+        <div className="cloud-foot">
+          <span>
+            <Circle size={8} fill="currentColor" /> Illustrative task execution
+          </span>
+          <button onClick={() => setStep((step + 1) % 4)}>
+            {step === 3 ? "Replay workflow" : "Next step"}
+            <ArrowUpRight size={13} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 export default function ProductPreview({ product }: { product: Product; paused: boolean }) {
-  return <div className="preview-transition" key={product}>{<ChatPreview />}</div>;
+  return <div className="preview-transition" key={product}>{product === "cloud" ? <CloudPreview /> : <ChatPreview />}</div>;
 }
