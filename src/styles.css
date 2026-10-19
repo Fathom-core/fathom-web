@@ -484,3 +484,80 @@ body:has(dialog[open]) {
   color: #d3bedf;
 }
 
+.section-index {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1.35px;
+  color: #a79ab6;
+  gap: 20px;
+}
+.section-index > span:last-child {
+  color: #6f677b;
+  font-size: 8px;
+}
+.vision {
+  padding-top: 115px;
+  padding-bottom: 40px;
+}
+.vision-layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 10%;
+  padding: 70px 0 95px;
+  align-items: center;
+}
+.vision-statement {
+  font-size: clamp(40px, 4.4vw, 74px);
+  font-weight: 450;
+  letter-spacing: -3px;
+  line-height: 1.12;
+  max-width: 780px;
+}
+.vision-emphasis {
+  display: block;
+  color: #9f7ec8;
+  margin-top: 10px;
+}
+.vision-copy {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #a49aaf;
+  max-width: 360px;
+}
+.vision-copy > p:first-of-type {
+  color: #e5dcec;
+  margin-bottom: 19px;
+  font-size: 17px;
+  line-height: 1.65;
+}
+.small-cross {
+  display: block;
+  color: #c0a0e3;
+  font-family: var(--mono);
+  font-size: 25px;
+  margin-bottom: 25px;
+  font-weight: 300;
+}
+.vision-copy .text-link {
+  margin-top: 30px;
+  color: #e4d2fa;
+}
+.vision-signature {
+  border-top: 1px solid var(--line);
+  padding-top: 26px;
+  display: flex;
+  align-items: center;
+  gap: 35px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #8d7c9e;
+  letter-spacing: 2px;
+}
+.vision-signature i {
+  height: 1px;
+  width: 90px;
+  background: linear-gradient(90deg, #51435e, transparent);
+}
