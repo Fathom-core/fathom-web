@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
 import ProductPreview from "./ProductPreview";
 import type { Product } from "./ProductPreview";
 
@@ -126,11 +125,11 @@ export default function App() {
   const [dialog, setDialog] = useState<"login" | "signup" | null>(null);
   const [faq, setFaq] = useState<number | null>(0);
   const [paused, setPaused] = useState(false);
+  const [liveSculpture, setLiveSculpture] = useState(false);
   const [reduced, setReduced] = useState(
     () => matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const smooth = useRef<Lenis | null>(null);
   const motionOff = paused || reduced;
   const active = products.find((p) => p.id === product)!;
   const activeNode = products.find((p) => p.id === node)!;
@@ -143,17 +142,55 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (
+      motionOff ||
+      matchMedia("(max-width: 900px), (pointer: coarse)").matches
+    )
+      return;
+
+    let timer = 0;
+    let idle = 0;
+    let activated = false;
+    const cancel = () => {
+      window.clearTimeout(timer);
+      if (idle) window.cancelIdleCallback(idle);
+      idle = 0;
+    };
+    const activate = () => {
+      if (activated || window.scrollY > 24) return;
+      activated = true;
+      cancel();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("pointermove", schedule);
+      setLiveSculpture(true);
+    };
+    const schedule = () => {
+      if (activated || window.scrollY > 24) return;
+      cancel();
+      timer = window.setTimeout(() => {
+        if (typeof window.requestIdleCallback === "function")
+          idle = window.requestIdleCallback(activate, { timeout: 3000 });
+        else timer = window.setTimeout(activate, 0);
+      }, 2500);
+    };
+    const onScroll = () => {
+      cancel();
+      if (window.scrollY <= 24) schedule();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("pointermove", schedule, { passive: true });
+    schedule();
+    return () => {
+      cancel();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("pointermove", schedule);
+    };
+  }, [motionOff]);
+
+  useEffect(() => {
     document.documentElement.classList.toggle("motion-paused", motionOff);
     if (motionOff) return;
-    const lenis = new Lenis({
-      duration: 1.05,
-      smoothWheel: true,
-      anchors: { offset: -90 },
-    });
-    smooth.current = lenis;
-    lenis.on("scroll", ScrollTrigger.update);
-    const tick = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(tick);
     const context = gsap.context(() => {
       gsap.from(".hero-title", {
         opacity: 0,
@@ -177,16 +214,6 @@ export default function App() {
           ease: "power3.out",
           scrollTrigger: { trigger: element, start: "top 92%", once: true },
         });
-      });
-      gsap.to(".hero-title", {
-        y: 85,
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".hero",
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
       });
       gsap.fromTo(
         ".vision-word",
@@ -216,21 +243,15 @@ export default function App() {
     }, root);
     return () => {
       context.revert();
-      gsap.ticker.remove(tick);
-      lenis.destroy();
-      smooth.current = null;
     };
   }, [motionOff]);
 
   useEffect(() => {
     if (dialog) {
       dialogRef.current?.showModal();
-      smooth.current?.stop();
     } else {
       dialogRef.current?.close();
-      smooth.current?.start();
     }
-    return () => smooth.current?.start();
   }, [dialog]);
 
   useEffect(() => {
@@ -248,10 +269,7 @@ export default function App() {
     if (id) setProduct(id);
     setMenuOpen(false);
     const target = document.getElementById("environments");
-    if (target)
-      smooth.current
-        ? smooth.current.scrollTo(target, { offset: -85 })
-        : target.scrollIntoView({ behavior: motionOff ? "instant" : "smooth" });
+    target?.scrollIntoView({ behavior: motionOff ? "instant" : "smooth" });
   };
 
   return (
@@ -316,17 +334,26 @@ export default function App() {
             UNCENSORED
           </h1>
           <div className="sculpture-stage">
-            <Suspense
-              fallback={
-                <img
-                  className="sculpture-poster"
-                  src="/models/fathom-core.webp"
-                  alt="A crowned, blindfolded sculpture representing independent intelligence"
-                />
-              }
-            >
-              <Sculpture paused={motionOff} />
-            </Suspense>
+            {liveSculpture ? (
+              <Suspense
+                fallback={
+                  <img
+                    className="sculpture-poster"
+                    src="/models/fathom-core.webp"
+                    alt="A crowned, blindfolded sculpture representing independent intelligence"
+                  />
+                }
+              >
+                <Sculpture paused={motionOff} />
+              </Suspense>
+            ) : (
+              <img
+                className="sculpture-poster"
+                src="/models/fathom-core.webp"
+                alt="A crowned, blindfolded sculpture representing independent intelligence"
+                fetchPriority="high"
+              />
+            )}
           </div>
           <div className="hero-copy">
             <p className="eyebrow">AI WITHOUT LIMITS</p>
@@ -840,7 +867,6 @@ export default function App() {
           <button
             className="text-link"
             onClick={() => {
-              smooth.current?.start();
               setDialog(null);
               explore();
             }}

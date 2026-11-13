@@ -36,8 +36,9 @@ and CLI releases remain in development. No prompt or account data is collected.
 the original model; it displays immediately and remains visible when WebGL is
 unavailable or software-rendered. No external 3D hosting is involved.
 
-`src/Sculpture.tsx` lazily loads the WebGL scene, caps pixel density, suspends
-rendering offscreen, and disposes graphics resources on unmount. `public/textures`
+`src/Sculpture.tsx` upgrades the immediate poster to WebGL only after an idle
+desktop hero, caps pixel density and frame rate, suspends rendering while scrolling
+or offscreen, and disposes graphics resources on unmount. `public/textures`
 contains the procedural stone and grain textures used in the typography.
 
 ## Verification
@@ -48,4 +49,4 @@ the ecosystem map, FAQs, account dialogs, and motion controls. The development
 browser has no working hardware WebGL context, so the rendered fallback is
 visually verified here; live 3D lighting still needs a hardware-GPU browser check.
 
-Stack: React, TypeScript, Vite, Three.js, GSAP, Lenis, and Lucide.
+Stack: React, TypeScript, Vite, Three.js, GSAP, and Lucide.

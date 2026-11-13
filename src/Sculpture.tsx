@@ -44,12 +44,10 @@ export default function Sculpture({ paused }: { paused: boolean }) {
       return;
     }
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.setClearColor(0x000000, 0);
     mount.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
@@ -73,19 +71,6 @@ export default function Sculpture({ paused }: { paused: boolean }) {
     scene.add(new THREE.HemisphereLight(0xe4d5fa, 0x1b1226, 0.65));
     const key = new THREE.DirectionalLight(0xeee5ff, 2.4);
     key.position.set(-1.6, 2, 3);
-    key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048);
-    Object.assign(key.shadow.camera, {
-      left: -0.7,
-      right: 0.7,
-      top: 0.7,
-      bottom: -0.7,
-      near: 0.1,
-      far: 8,
-    });
-    key.shadow.bias = -0.0001;
-    key.shadow.normalBias = 0.002;
-    key.shadow.camera.updateProjectionMatrix();
     scene.add(key);
     const rim = new THREE.DirectionalLight(0xb665ff, 5);
     rim.position.set(-1.8, 0.8, -1.2);
@@ -98,6 +83,8 @@ export default function Sculpture({ paused }: { paused: boolean }) {
     let disposed = false;
     let lost = false;
     let visible = true;
+    let scrolling = false;
+    let scrollTimer = 0;
     let frame = 0;
     let lastTime = 0;
     let elapsed = 0;
@@ -131,8 +118,6 @@ export default function Sculpture({ paused }: { paused: boolean }) {
         model.rotation.y = initialRotation;
         model.traverse((child) => {
           if (!(child instanceof THREE.Mesh)) return;
-          child.castShadow = true;
-          child.receiveShadow = true;
           const material = child.material as THREE.MeshStandardMaterial;
           material.metalness = 0.15;
           material.roughness = 0.78;
@@ -168,12 +153,18 @@ export default function Sculpture({ paused }: { paused: boolean }) {
         disposed ||
         lost ||
         !visible ||
+        scrolling ||
         document.hidden ||
         !model ||
         pausedRef.current
       )
         return;
-      const dt = Math.min((time - lastTime) / 1000, 0.05);
+      const frameTime = time - lastTime;
+      if (frameTime < 1000 / 24) {
+        frame = requestAnimationFrame(render);
+        return;
+      }
+      const dt = Math.min(frameTime / 1000, 0.05);
       lastTime = time;
       if (!pausedRef.current) {
         elapsed += dt;
@@ -193,6 +184,7 @@ export default function Sculpture({ paused }: { paused: boolean }) {
         !disposed &&
         !lost &&
         !pausedRef.current &&
+        !scrolling &&
         visible &&
         !document.hidden &&
         model
@@ -202,18 +194,31 @@ export default function Sculpture({ paused }: { paused: boolean }) {
       }
     }
     resume.current = start;
+    const onScroll = () => {
+      scrolling = true;
+      cancelAnimationFrame(frame);
+      frame = 0;
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        scrolling = false;
+        start();
+      }, 180);
+    };
     const pointer = (e: PointerEvent) => {
       mouseX = (e.clientX / innerWidth - 0.5) * 2;
       mouseY = (e.clientY / innerHeight - 0.5) * 2;
     };
-    const observer = new IntersectionObserver((entries) => {
-      visible = entries[0].isIntersecting;
-      if (visible) start();
-      else {
-        cancelAnimationFrame(frame);
-        frame = 0;
-      }
-    });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        visible = entries[0].intersectionRatio > 0.15;
+        if (visible) start();
+        else {
+          cancelAnimationFrame(frame);
+          frame = 0;
+        }
+      },
+      { threshold: [0, 0.15] },
+    );
     observer.observe(mount);
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(mount);
@@ -231,15 +236,18 @@ export default function Sculpture({ paused }: { paused: boolean }) {
       frame = 0;
     };
     window.addEventListener("pointermove", pointer, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("visibilitychange", visibility);
     canvas.addEventListener("webglcontextlost", contextLost);
     return () => {
       disposed = true;
       resume.current = () => {};
       cancelAnimationFrame(frame);
+      window.clearTimeout(scrollTimer);
       observer.disconnect();
       resizeObserver.disconnect();
       window.removeEventListener("pointermove", pointer);
+      window.removeEventListener("scroll", onScroll);
       document.removeEventListener("visibilitychange", visibility);
       canvas.removeEventListener("webglcontextlost", contextLost);
       if (model) disposeModel(model);
