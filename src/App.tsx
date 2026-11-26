@@ -192,12 +192,6 @@ export default function App() {
     document.documentElement.classList.toggle("motion-paused", motionOff);
     if (motionOff) return;
     const context = gsap.context(() => {
-      gsap.from(".hero-title", {
-        opacity: 0,
-        duration: 1.5,
-        ease: "power3.out",
-        delay: 0.15,
-      });
       gsap.from(".hero-copy, .hero-aside, .hero-bottom", {
         y: 18,
         opacity: 0,
