@@ -1,5 +1,12 @@
 @import "@fontsource-variable/manrope";
-@import "@fontsource/anton/latin-400.css";
+
+@font-face {
+  font-family: "Anton";
+  font-style: normal;
+  font-display: block;
+  font-weight: 400;
+  src: url("/fonts/anton-latin-400-normal.woff2") format("woff2");
+}
 
 :root {
   font-family: "Manrope Variable", sans-serif;
@@ -314,6 +321,9 @@ body:has(dialog[open]) {
   z-index: 0;
   transform-origin: center;
   filter: drop-shadow(0 4px 20px #8a47c212);
+}
+.hero-font-loading .hero-title {
+  visibility: hidden;
 }
 .sculpture-stage {
   position: absolute;
